@@ -8,8 +8,31 @@ export default function Home() {
   const [inputUrl, setInputUrl] = useState("");
   const [converted, setConverted] = useState(null);
 
+  // Detectar el servicio del link pegado
+  const getServiceFromUrl = (url) => {
+    if (!url) return null;
+    if (url.includes('spotify.com')) return 'Spotify';
+    if (url.includes('apple.com')) return 'Apple Music';
+    if (url.includes('youtube.com') || url.includes('youtu.be')) return 'YouTube';
+    if (url.includes('deezer.com')) return 'Deezer';
+    return 'Desconocido';
+  };
+
+  const serviceName = getServiceFromUrl(inputUrl);
+
   const handleConvert = async () => {
     setConverted(null);
+
+    if (!inputUrl) {
+      setConverted({ error: "Por favor pega un link de canción." });
+      return;
+    }
+
+    if (serviceName === "Desconocido") {
+      setConverted({ error: "Solo se permiten links de Spotify, Apple Music, YouTube o Deezer." });
+      return;
+    }
+
     try {
       const res = await fetch("/api/audd", {
         method: "POST",
@@ -67,11 +90,17 @@ export default function Home() {
       <Card className="w-full max-w-xl shadow-xl">
         <CardContent className="flex flex-col gap-4 p-6">
           <Input
-            placeholder="Pega aquí un link de Spotify, Apple Music, etc."
+            placeholder="Pega aquí un link de cualquier servicio (Spotify, Apple Music, YouTube, Deezer...)"
             value={inputUrl}
             onChange={(e) => setInputUrl(e.target.value)}
             className="text-lg"
           />
+          {/* Mostrar el servicio detectado */}
+          {inputUrl && (
+            <div className="text-xs text-gray-500 mt-1">
+              Servicio detectado: <span className="font-semibold">{serviceName}</span>
+            </div>
+          )}
           <Button
             onClick={handleConvert}
             className="w-full text-lg py-3 bg-gradient-to-r from-blue-500 to-purple-500 font-bold rounded-xl shadow-lg hover:from-blue-600 hover:to-purple-600 transition-all"
