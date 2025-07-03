@@ -7,6 +7,7 @@ import { Card, CardContent } from "../components/ui/card";
 export default function Home() {
   const [inputUrl, setInputUrl] = useState("");
   const [converted, setConverted] = useState(null);
+  const [musicLink, setMusicLink] = useState(""); // Nuevo state para el link compartible
 
   // Detectar el servicio del link pegado
   const getServiceFromUrl = (url) => {
@@ -27,6 +28,7 @@ export default function Home() {
 
   const handleConvert = async () => {
     setConverted(null);
+    setMusicLink(""); // Limpiar link al reconvertir
 
     if (!inputUrl) {
       setConverted({ error: "Por favor pega un link de canción." });
@@ -86,6 +88,18 @@ export default function Home() {
     } catch {
       setConverted({ error: "Ocurrió un error al buscar la canción." });
     }
+  };
+
+  // Nueva función para crear el link compartible
+  const handleCreateMusicLink = async () => {
+    if (!converted) return;
+    const res = await fetch("/api/song", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(converted),
+    });
+    const data = await res.json();
+    setMusicLink(`${window.location.origin}/song/${data.id}`);
   };
 
   return (
@@ -170,6 +184,25 @@ export default function Home() {
                   </a>
                 )}
               </div>
+              {/* Botón para crear Music Link */}
+              <Button
+                onClick={handleCreateMusicLink}
+                className="mt-4 w-full bg-indigo-600 text-white font-bold text-lg py-2 rounded-xl hover:bg-indigo-700"
+              >
+                Crear Music Link para compartir
+              </Button>
+              {musicLink && (
+                <div className="mt-4 text-center">
+                  <div className="text-sm text-gray-600 mb-2">¡Listo! Comparte este link:</div>
+                  <div className="p-2 bg-gray-100 rounded-lg select-all break-all mb-2">{musicLink}</div>
+                  <Button
+                    onClick={() => navigator.clipboard.writeText(musicLink)}
+                    className="bg-green-500 hover:bg-green-600 w-full mt-1"
+                  >
+                    Copiar link
+                  </Button>
+                </div>
+              )}
             </CardContent>
           </Card>
         </div>
@@ -190,4 +223,3 @@ export default function Home() {
     </main>
   );
 }
-
