@@ -8,18 +8,38 @@ export default function Home() {
   const [inputUrl, setInputUrl] = useState("");
   const [converted, setConverted] = useState(null);
 
-  const handleConvert = () => {
-    // Simulación de conversión de link
+const handleConvert = async () => {
+  setConverted(null);
+
+  try {
+    const res = await fetch("/api/audd", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ url: inputUrl })
+    });
+    const data = await res.json();
+
+    if (!data.result) {
+      setConverted({ error: "No se encontró la canción o el link es inválido." });
+      return;
+    }
+
+    const { title, artist } = data.result;
     setConverted({
-      title: "As It Was",
-      artist: "Harry Styles",
+      title,
+      artist,
       services: {
-        spotify: "https://open.spotify.com/track/123",
-        apple: "https://music.apple.com/track/abc",
-        youtube: "https://music.youtube.com/watch?v=xyz"
+        spotify: data.result.spotify?.external_urls?.spotify,
+        apple: data.result.apple_music?.url,
+        youtube: data.result.youtube?.url,
+        deezer: data.result.deezer?.link,
       }
     });
-  };
+  } catch {
+    setConverted({ error: "Ocurrió un error al buscar la canción." });
+  }
+};
+
 
   return (
     <main className="flex flex-col items-center justify-center min-h-screen p-4">
@@ -32,7 +52,9 @@ export default function Home() {
         />
         <Button onClick={handleConvert}>Convertir</Button>
       </div>
-
+{converted && converted.error && (
+  <div className="text-red-600 mt-4">{converted.error}</div>
+)}
       {converted && (
         <Card className="mt-8 w-full max-w-xl">
           <CardContent className="p-4">
@@ -45,6 +67,7 @@ export default function Home() {
             </div>
           </CardContent>
         </Card>
+
       )}
     </main>
   );
