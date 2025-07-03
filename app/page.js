@@ -18,6 +18,11 @@ export default function Home() {
     return 'Desconocido';
   };
 
+  const isAppleMusicSongLink = (url) => {
+    // Busca el parámetro ?i= en el link, típico de canción individual en Apple Music
+    return url.includes('music.apple.com') && url.includes('?i=');
+  };
+
   const serviceName = getServiceFromUrl(inputUrl);
 
   const handleConvert = async () => {
@@ -33,6 +38,14 @@ export default function Home() {
       return;
     }
 
+    // Mensaje especial para Apple Music (no canción individual)
+    if (serviceName === "Apple Music" && !isAppleMusicSongLink(inputUrl)) {
+      setConverted({
+        error: "Por favor usa el link de una canción individual de Apple Music, no de un álbum ni playlist."
+      });
+      return;
+    }
+
     try {
       const res = await fetch("/api/audd", {
         method: "POST",
@@ -40,6 +53,7 @@ export default function Home() {
         body: JSON.stringify({ url: inputUrl })
       });
       const data = await res.json();
+      console.log("Respuesta AudD:", data); // 👈 Esto te ayuda a debuggear
 
       if (!data.result) {
         setConverted({ error: "No se encontró la canción o el link es inválido." });
@@ -83,7 +97,7 @@ export default function Home() {
       </div>
       <p className="text-center text-gray-600 mb-6 max-w-lg">
         Pega el link de cualquier canción y te damos los equivalentes en todas tus plataformas favoritas.<br />
-        <span className="text-xs text-gray-400">Funciona con Spotify, Apple Music, YouTube y Deezer.</span>
+        <span className="text-xs text-gray-400">Funciona con Spotify, Apple Music (canción individual), YouTube y Deezer.</span>
       </p>
 
       {/* Formulario */}
@@ -99,6 +113,9 @@ export default function Home() {
           {inputUrl && (
             <div className="text-xs text-gray-500 mt-1">
               Servicio detectado: <span className="font-semibold">{serviceName}</span>
+              {serviceName === "Apple Music" && !isAppleMusicSongLink(inputUrl) && (
+                <span className="text-red-600 ml-2">— Pega un link de canción individual, no álbum/playlist.</span>
+              )}
             </div>
           )}
           <Button
@@ -173,3 +190,4 @@ export default function Home() {
     </main>
   );
 }
+
