@@ -55,7 +55,7 @@ export default function Home() {
         body: JSON.stringify({ url: inputUrl })
       });
       const data = await res.json();
-      console.log("Respuesta AudD:", data); // 👈 Esto te ayuda a debuggear
+      console.log("Respuesta AudD:", data);
 
       if (!data.result) {
         setConverted({ error: "No se encontró la canción o el link es inválido." });
