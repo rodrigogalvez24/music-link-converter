@@ -29,10 +29,10 @@ const handleConvert = async () => {
       title,
       artist,
       services: {
-        spotify: data.result.spotify?.external_urls?.spotify,
-        apple: data.result.apple_music?.url,
-        youtube: data.result.youtube?.url,
-        deezer: data.result.deezer?.link,
+  spotify: data.result.spotify?.external_urls?.spotify,
+  apple: data.result.apple_music?.url,
+  youtube: data.result.youtube?.url || data.result.youtube_video?.url,
+  deezer: data.result.deezer?.link,
       }
     });
   } catch {
